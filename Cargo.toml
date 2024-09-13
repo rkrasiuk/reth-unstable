@@ -1,0 +1,70 @@
+[package]
+name = "reth-unstable"
+version = "0.1.0"
+edition = "2021"
+
+[profile.dev.package]
+proptest.opt-level = 3
+rand_chacha.opt-level = 3
+rand_xorshift.opt-level = 3
+unarray.opt-level = 3
+
+[profile.profiling]
+inherits = "release"
+debug = 2
+strip = false
+
+[profile.maxperf]
+inherits = "release"
+lto = "fat"
+codegen-units = 1
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+debug = "line-tables-only"
+strip = true
+panic = "unwind"
+codegen-units = 16
+
+[dependencies]
+# reth
+reth = { git = "https://github.com/paradigmxyz/reth" }
+reth-primitives = { git = "https://github.com/paradigmxyz/reth" }
+reth-db = { git = "https://github.com/paradigmxyz/reth" }
+reth-provider = { git = "https://github.com/paradigmxyz/reth" }
+reth-cli = { git = "https://github.com/paradigmxyz/reth" }
+reth-cli-runner = { git = "https://github.com/paradigmxyz/reth" }
+reth-cli-commands = { git = "https://github.com/paradigmxyz/reth" }
+reth-cli-util = { git = "https://github.com/paradigmxyz/reth" }
+reth-node-core = { git = "https://github.com/paradigmxyz/reth" }
+reth-node-builder = { git = "https://github.com/paradigmxyz/reth" }
+reth-node-ethereum = { git = "https://github.com/paradigmxyz/reth" }
+reth-node-metrics = { git = "https://github.com/paradigmxyz/reth" }
+reth-chainspec = { git = "https://github.com/paradigmxyz/reth" }
+reth-tracing = { git = "https://github.com/paradigmxyz/reth" }
+
+# unstable tokio
+tokio = { version = "1.39", default-features = false, features = ["tracing"] }
+console-subscriber = "0.4"
+
+# misc
+clap = "4"
+eyre = "0.6"
+tracing = "0.1.0"
+tracing-subscriber = { version = "0.3", default-features = false, features = ["env-filter", "fmt", "json"] }
+tracing-appender = "0.2"
+tracing-journald = "0.3"
+rolling-file = "0.2.0"
+tikv-jemallocator = "0.5.0"
+
+[target.'cfg(unix)'.dependencies]
+tikv-jemallocator = { version = "0.5.0", optional = true }
+
+[features]
+default = ["jemalloc"]
+
+asm-keccak = ["reth-node-core/asm-keccak", "reth-primitives/asm-keccak"]
+
+jemalloc = ["dep:tikv-jemallocator", "reth-node-core/jemalloc", "reth-node-metrics/jemalloc"]
+jemalloc-prof = ["jemalloc", "tikv-jemallocator?/profiling"]
